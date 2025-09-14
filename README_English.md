@@ -1,6 +1,6 @@
-# Browse-Now
+# BrowseNow
 
-**Browse-Now** is a lightweight, high-efficiency, and highly extensible web preview tool designed for rapid front-end development and debugging. It enables real-time preview of code execution results with support for flexible viewport ratio switching, live deployment of **JavaScript, CSS, and HTML**, and the ability to download and import external resources.
+**BrowseNow** is a lightweight, high-efficiency, and highly extensible web preview tool designed for rapid front-end development and debugging. It enables real-time preview of code execution results with support for flexible viewport ratio switching, live deployment of **JavaScript, CSS, and HTML**, and the ability to download and import external resources.
 
 Additionally, BrowseNow supports uploading local TXT and HTML files and one-click export of code files.
 
@@ -36,5 +36,5 @@ This tool aims to simplify HTML editing and debugging in scenarios where traditi
 </body>
 </html>
 
-Browse-Now is designed to make light work of web snippet testing and debugging. Perfect for educators,students, and developers who need instant feedback.
+BrowseNow is designed to make light work of web snippet testing and debugging. Perfect for educators,students, and developers who need instant feedback.
 Contributions and suggestions are welcome!
