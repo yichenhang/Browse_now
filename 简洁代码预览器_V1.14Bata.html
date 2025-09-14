@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简洁代码预览器_V1.14Bata</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        @media (min-width: 1024px) {
+            .container {
+                flex-direction: row;
+                height: calc(100vh - 40px);
+            }
+            .layout-toggle {
+                display: none;
+            }
+        }
+
+        @media (max-width: 1023px) {
+            .container {
+                height: calc(100vh - 40px);
+                position: relative;
+            }
+            
+            /* 布局1: 代码3/10, 预览7/10 */
+            .container.layout-1 .code-panel {
+                flex: 3;
+                display: flex;
+                flex-direction: column;
+            }
+            .container.layout-1 .preview-panel {
+                flex: 7;
+            }
+            
+            /* 布局2: 代码只保留标题栏, 预览占剩余 */
+            .container.layout-2 .code-panel {
+                flex: 0 0 auto;
+                height: auto;
+            }
+            .container.layout-2 .code-panel .panel-body {
+                display: none;
+            }
+            .container.layout-2 .preview-panel {
+                flex: 1;
+            }
+            
+            /* 布局3: 代码7/10, 预览3/10 */
+            .container.layout-3 .code-panel {
+                flex: 7;
+            }
+            .container.layout-3 .preview-panel {
+                flex: 3;
+            }
+            
+            .panel {
+                transition: flex 0.5s ease;
+            }
+            
+            .code-panel .panel-body {
+                transition: display 0.3s ease;
+            }
+            
+            /* 移动端按钮样式调整 */
+            .panel-actions button {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+        }
+
+        .panel {
+            flex: 1;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            padding: 12px 20px;
+            background-color: #004a07;
+            color: #fff;
+            font-weight: 600;
+            font-size: 16px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .action-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .panel-body {
+            flex: 1;
+            overflow: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            position: relative;
+        }
+        /*暂时不用支持Chrome和Safa*/
+
+        #code-input {
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            border: none;
+            outline: none;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            resize: none;
+            background-color: #fafafa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        #preview-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background-color: #fff;
+        }
+
+        /* 布局切换悬浮按钮 */
+        .layout-toggle {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #004a07;
+            color: white;
+            border: none;
+            font-size: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .layout-toggle:hover {
+            background-color: #2980b9;
+            transform: scale(1.05);
+        }
+
+        /* 文件上传区域样式 */
+        #file-upload {
+            display: none;
+        }
+
+        .upload-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(52, 152, 219, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 24px;
+            z-index: 100;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .upload-overlay.active {
+            display: flex;
+        }
+
+        /* 基础代码高亮样式 */
+        #code-input [data-type="tag"] { color: #3273dc; }
+        #code-input [data-type="attr"] { color: #e17055; }
+        #code-input [data-type="value"] { color: #27ae60; }
+        #code-input [data-type="comment"] { color: #95a5a6; }
+        #code-input [data-type="css"] { color: #9b59b6; }
+        #code-input [data-type="js"] { color: #f39c12; }
+
+        /* 通知提示 */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background-color: #2ecc71;
+            color: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+            z-index: 1001;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background-color: #e74c3c;
+        }
+        
+        /* 资源加载状态指示器 */
+        .resource-status {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            padding: 8px 16px;
+            background-color: rgba(44, 62, 80, 0.9);
+            color: white;
+            border-radius: 4px;
+            font-size: 14px;
+            z-index: 1001;
+            display: none;
+        }
+        
+        .resource-status.show {
+            /*永久关闭该功能*/
+            display: None;
+        }
+    </style>
+</head>
+<body>
+    <div class="container layout-1">
+        <!-- 代码输入面板 -->
+        <div class="panel code-panel">
+            <div class="panel-header">
+                代码输入区（支持HTML/CSS/JS）
+                <div class="panel-actions">
+                    <button class="action-btn" id="upload-btn">
+                        <i class="fas fa-upload"></i> 上传
+                    </button>
+                    <button class="action-btn" id="save-html-btn">
+                        <i class="fas fa-save"></i> 保存HTML
+                    </button>
+                    <button class="action-btn" id="save-txt-btn">
+                        <i class="fas fa-file-alt"></i> 保存TXT
+                    </button>
+                </div>
+                <input type="file" id="file-upload" accept=".html,.txt">
+            </div>
+            <div class="panel-body">
+                <div class="upload-overlay" id="upload-overlay">
+                    <i class="fas fa-file-code fa-4x"></i>
+                    <p>拖放文件到此处上传</p>
+                </div>
+                <textarea id="code-input" placeholder="请在此输入HTML代码，可包含<style>和<script>标签...">
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>外部资源加载示例</title>
+    <!-- 示例：引入外部CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <!-- 示例：外部图片 -->
+        <img src="https://picsum.photos/800/400" alt="测试图片" class="img-fluid my-3">
+        
+        <!-- 示例：外部JavaScript -->
+        <button class="btn btn-success" onclick="showAlert()">点击测试外部JS</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showAlert() {
+            alert('外部资源加载成功！');
+        }
+    </script>
+</body>
+</html>
+                </textarea>
+            </div>
+        </div>
+
+        <!-- 预览面板 -->
+        <div class="panel preview-panel">
+            <div class="panel-header">
+                实时预览区
+            </div>
+            <div class="panel-body">
+                <!-- 调整sandbox属性以允许外部资源加载 -->
+                <iframe id="preview-frame" sandbox="allow-scripts allow-forms allow-same-origin allow-downloads allow-popups allow-top-navigation-by-user-activation"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- 布局切换按钮 -->
+    <button class="layout-toggle" id="layoutToggle">⇅</button>
+
+    <!-- 通知提示 -->
+    <div class="notification" id="notification"></div>
+    
+    <!-- 资源加载状态指示器 -->
+    <div class="resource-status" id="resourceStatus"></div>
+
+    <script>
+        // 获取DOM元素
+        const codeInput = document.getElementById('code-input');
+        const previewFrame = document.getElementById('preview-frame');
+        const container = document.querySelector('.container');
+        const layoutToggle = document.getElementById('layoutToggle');
+        const saveHtmlBtn = document.getElementById('save-html-btn');
+        const saveTxtBtn = document.getElementById('save-txt-btn');
+        const uploadBtn = document.getElementById('upload-btn');
+        const fileUpload = document.getElementById('file-upload');
+        const uploadOverlay = document.getElementById('upload-overlay');
+        const notification = document.getElementById('notification');
+        const resourceStatus = document.getElementById('resourceStatus');
+        
+        let currentLayout = 1;
+        let resourceLoadCounter = 0;
+
+        // 初始化预览
+        updatePreview();
+
+        // 监听代码输入变化，实时更新预览
+        codeInput.addEventListener('input', updatePreview);
+
+        // 布局切换功能
+        layoutToggle.addEventListener('click', () => {
+            container.classList.remove(`layout-${currentLayout}`);
+            currentLayout = currentLayout % 3 + 1;
+            container.classList.add(`layout-${currentLayout}`);
+            updateLayoutIcon();
+        });
+
+        // 更新布局按钮图标
+        function updateLayoutIcon() {
+            switch(currentLayout) {
+                case 1:
+                    layoutToggle.textContent = "☵";
+                    break;
+                case 2:
+                    layoutToggle.textContent = "☴";
+                    break;
+                case 3:
+                    layoutToggle.textContent = "☲";
+                    break;
+            }
+        }
+
+        // 更新预览函数 - 增加资源加载监控
+        function updatePreview() {
+            try {
+                const code = codeInput.value.trim();
+                const previewDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+                
+                // 重置资源加载计数器
+                resourceLoadCounter = 0;
+                
+                // 解析代码中的资源数量
+                const resourceCount = countResources(code);
+                if (resourceCount > 0) {
+                    resourceStatus.classList.add('show');
+                }
+                
+                // 重置并写入预览文档
+                previewDoc.open();
+                
+                // 监听资源加载事件
+                previewDoc.addEventListener('load', handlePreviewLoad);
+                previewDoc.addEventListener('error', handlePreviewError);
+                
+                // 为所有资源添加加载监听
+                previewDoc.addEventListener('DOMContentLoaded', () => {
+                    setupResourceLoadListeners(previewDoc, resourceCount);
+                });
+                
+                previewDoc.write(code);
+                previewDoc.close();
+
+                highlightCode();
+            } catch (error) {
+                const previewDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+                previewDoc.open();
+                previewDoc.write(`
+                    <html>
+                        <body style="background:#fff; display:flex; justify-content:center; align-items:center; height:100vh; margin:0;">
+                            <div style="color:#e74c3c; font-size:18px; text-align:center; padding:20px; border:1px solid #fadbd8; border-radius:5px;">
+                                <h3>代码执行错误</h3>
+                                <p style="margin-top:10px;">${error.message}</p>
+                            </div>
+                        </body>
+                    </html>
+                `);
+                previewDoc.close();
+                resourceStatus.classList.remove('show');
+            }
+        }
+
+        // 统计代码中的资源数量
+        function countResources(html) {
+            // 匹配img, script, link等标签中的资源
+            const imgMatch = html.match(/<img[^>]+src="[^"]+"/gi) || [];
+            const scriptMatch = html.match(/<script[^>]+src="[^"]+"/gi) || [];
+            const linkMatch = html.match(/<link[^>]+href="[^"]+"/gi) || [];
+            return imgMatch.length + scriptMatch.length + linkMatch.length;
+        }
+
+        // 设置资源加载监听器
+        function setupResourceLoadListeners(doc, totalResources) {
+            // 监听图片加载
+            const images = doc.querySelectorAll('img[src]');
+            images.forEach(img => {
+                img.addEventListener('load', () => checkAllResourcesLoaded(totalResources));
+                img.addEventListener('error', (e) => handleResourceError(e.target.src));
+            });
+            
+            // 监听脚本加载
+            const scripts = doc.querySelectorAll('script[src]');
+            scripts.forEach(script => {
+                script.addEventListener('load', () => checkAllResourcesLoaded(totalResources));
+                script.addEventListener('error', (e) => handleResourceError(e.target.src));
+            });
+            
+            // 监听样式表加载
+            const links = doc.querySelectorAll('link[href][rel="stylesheet"]');
+            links.forEach(link => {
+                link.addEventListener('load', () => checkAllResourcesLoaded(totalResources));
+                link.addEventListener('error', (e) => handleResourceError(e.target.href));
+            });
+        }
+
+        // 检查所有资源是否加载完成
+        function checkAllResourcesLoaded(total) {
+            resourceLoadCounter++;
+            if (resourceLoadCounter >= total) {
+                resourceStatus.classList.remove('show');
+                showNotification('所有资源加载完成');
+            }
+        }
+
+        // 处理资源加载错误
+        function handleResourceError(url) {
+            resourceLoadCounter++;
+            showNotification(`资源加载失败: ${url.split('/').pop()}`, true);
+            
+            // 如果所有资源都已尝试加载（无论成功失败），隐藏加载指示器
+            const totalResources = countResources(codeInput.value);
+            if (resourceLoadCounter >= totalResources) {
+                resourceStatus.classList.remove('show');
+            }
+        }
+
+        // 处理预览框架加载完成
+        function handlePreviewLoad() {
+            // 可以在这里添加额外的加载完成处理
+        }
+
+        // 处理预览框架加载错误
+        function handlePreviewError() {
+            showNotification('预览框架加载出错', true);
+            resourceStatus.classList.remove('show');
+        }
+
+        // 基础代码高亮函数
+        function highlightCode() {
+            const code = codeInput.value;
+            
+            let highlighted = code.replace(/(&lt;[\/]?[a-zA-Z0-9]+(?:\s+[a-zA-Z0-9-]+(?:="[^"]*")?)*\s*[\/]?&gt;)/g, 
+                '<span data-type="tag">$1</span>');
+            
+            highlighted = highlighted.replace(/(\s+[a-zA-Z0-9-]+)=/g, 
+                ' <span data-type="attr">$1</span>=');
+            
+            highlighted = highlighted.replace(/=(".*?"|'.*?')/g, 
+                '=<span data-type="value">$1</span>');
+            
+            highlighted = highlighted.replace(/(&lt;style&gt;)([\s\S]*?)(&lt;\/style&gt;)/g, 
+                '$1<span data-type="css">$2</span>$3');
+            
+            highlighted = highlighted.replace(/(&lt;script&gt;)([\s\S]*?)(&lt;\/script&gt;)/g, 
+                '$1<span data-type="js">$2</span>$3');
+            
+            highlighted = highlighted.replace(/(&lt;!--[\s\S]*?--&gt;)/g, 
+                '<span data-type="comment">$1</span>');
+            
+            codeInput.innerHTML = highlighted;
+        }
+
+        // 显示通知
+        function showNotification(message, isError = false) {
+            notification.textContent = message;
+            notification.classList.add('show');
+            if (isError) {
+                notification.classList.add('error');
+            } else {
+                notification.classList.remove('error');
+            }
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // 保存为HTML文件
+        saveHtmlBtn.addEventListener('click', () => {
+            const code = codeInput.value.trim();
+            if (!code) {
+                showNotification('没有可保存的内容', true);
+                return;
+            }
+            
+            const blob = new Blob([code], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'code-preview.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification('HTML文件保存成功');
+        });
+
+        // 保存为TXT文件
+        saveTxtBtn.addEventListener('click', () => {
+            const code = codeInput.value.trim();
+            if (!code) {
+                showNotification('没有可保存的内容', true);
+                return;
+            }
+            
+            const blob = new Blob([code], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'code-preview.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification('TXT文件保存成功');
+        });
+
+        // 上传文件处理
+        uploadBtn.addEventListener('click', () => {
+            fileUpload.click();
+        });
+
+        fileUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                handleFileUpload(file);
+                fileUpload.value = '';
+            }
+        });
+
+        function handleFileUpload(file) {
+            if (!file.name.endsWith('.html') && !file.name.endsWith('.txt')) {
+                showNotification('请上传HTML或TXT文件', true);
+                return;
+            }
+            
+            const reader = new FileReader();
+            
+            reader.onload = (e) => {
+                codeInput.value = e.target.result;
+                updatePreview();
+                showNotification(`文件 "${file.name}" 上传成功`);
+            };
+            
+            reader.onerror = () => {
+                showNotification('文件读取失败', true);
+            };
+            
+            reader.readAsText(file);
+        }
+
+        // 拖拽上传功能
+        const codePanelBody = document.querySelector('.code-panel .panel-body');
+        
+        codePanelBody.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            if (window.innerWidth >= 1024) {
+                uploadOverlay.classList.add('active');
+            }
+        });
+        
+        codePanelBody.addEventListener('dragleave', () => {
+            uploadOverlay.classList.remove('active');
+        });
+        
+        codePanelBody.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadOverlay.classList.remove('active');
+            
+            if (window.innerWidth >= 1024 && e.dataTransfer.files.length) {
+                const file = e.dataTransfer.files[0];
+                handleFileUpload(file);
+            }
+        });
+
+        // 初始化处理
+        window.addEventListener('load', () => {
+            const originalCode = codeInput.value;
+            const escapedCode = originalCode
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+            codeInput.innerHTML = escapedCode;
+            codeInput.focus();
+            codeInput.scrollTop = codeInput.scrollHeight;
+        });
+    </script>
+</body>
+</html>
+    
