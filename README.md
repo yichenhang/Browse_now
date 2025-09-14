@@ -8,9 +8,9 @@
 
 Additionally, BrowseNow supports uploading local TXT and HTML files and one-click export of code files.
 
-BrowseNow 致力于解决传统工作流程中编辑和调试 HTML 过于繁琐的问题，尤其适用于快速查看和修改 AI 生成的代码、实时调整页面元素、轻量级原型开发等场景。欢迎反馈使用问题或提出改进建议！
+BrowseNow 致力于解决传统工作流程中编辑和调试 HTML 过于繁琐的问题，尤其适用于快速查看和修改 AI 生成的代码、实时调整页面元素、轻量级原型开发等场景。
 
-This tool aims to simplify HTML editing and debugging in scenarios where traditional workflows are too cumbersome—particularly useful for lightweight development tasks such as rapid debugging of AI-generated code, quick page element tweaking, and live code validation. Feedback and issues are welcome.
+This tool aims to simplify HTML editing and debugging in scenarios where traditional workflows are too cumbersome—particularly useful for lightweight development tasks such as rapid debugging of AI-generated code, quick page element tweaking, and live code validation. 
 
 ---
 
@@ -56,9 +56,10 @@ This tool aims to simplify HTML editing and debugging in scenarios where traditi
     <h1>Hello，BrowseNow！🚀</h1>
 </body>
 </html>
+```
 
-BrowseNow 可帮助您快速测试和调试网页代码片段，无论你是教师、学生和开发者的轻量级开发利器。
+**BrowseNow** 可帮助您快速测试和调试网页代码片段，无论你是教师、学生和开发者的轻量级开发利器。
 欢迎提交 lssue 或建议，帮助做得更好!
 
-BrowseNow is designed to make light work of web snippet testing and debugging. Perfect for educators, students, and developers who need instant feedback.
+**BrowseNow** is designed to make light work of web snippet testing and debugging. Perfect for educators, students, and developers who need instant feedback.
 Contributions and suggestions are welcome!
