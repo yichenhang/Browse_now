@@ -23,12 +23,16 @@ This tool aims to simplify HTML editing and debugging in scenarios where traditi
 - 支持通过 URL 加载外部资源
 - 适合 AI 生成代码调试、教学演示与快速原型开发
 
+---
+
+## Features
 - **Real-time preview** of HTML/CSS/JavaScript
 - Adjustable **screen ratio** presets
 - **Fast rendering** without full-page reload
 - **Import & export** support for local files (TXT, HTML)
 - **Load external resources** via URL
 - Ideal for debugging AI-generated code and lightweight prototyping
+
 ## 使用示例
 
 1. 在编辑区编写或粘贴 HTML、CSS 和 JavaScript 代码；
