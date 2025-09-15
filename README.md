@@ -4,7 +4,7 @@
 
 **BrowseNow** is a lightweight, high-efficiency, and highly extensible web preview tool designed for rapid front-end development and debugging. It enables real-time preview of code execution results with support for flexible viewport ratio switching, live deployment of **JavaScript, CSS, and HTML**, and the ability to download and import external resources.
 
-此外，BrowseNow 还提供本地 TXT/HTML 文件上传和一键导出代码文件，方便开发者快速调试和保存项目。
+此外，BrowseNow 还提供本地 TXT/HTML 文件上传和一键导出代码文件功能，方便开发者快速调试和保存项目。
 
 Additionally, BrowseNow supports uploading local TXT and HTML files and one-click export of code files.
 
