@@ -1,3 +1,14 @@
+# -*- coding: utf-8 -*-
+"""
+@filename:    简洁代码预览器_V1.14Beta.html
+@author:      Hang Yichen（yichenhang in github)
+@date:        October 26, 2023
+@version:     1.0
+@description: 
+    该文件即为完整运行代码。关于拆分后的文件会在稍后推出。您可以通过以下邮箱联系我：19958132745@163.com。
+@license:     MIT
+"""
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -80,7 +91,7 @@
                 transition: display 0.3s ease;
             }
             
-            /* 移动端按钮样式调整 */
+            /* 移动端可在此处调整按钮样式 */
             .panel-actions button {
                 padding: 6px 10px;
                 font-size: 12px;
@@ -213,7 +224,7 @@
             display: flex;
         }
 
-        /* 基础代码高亮样式 */
+        /* 基础代码高亮样式，暂未完成 */
         #code-input [data-type="tag"] { color: #3273dc; }
         #code-input [data-type="attr"] { color: #e17055; }
         #code-input [data-type="value"] { color: #27ae60; }
@@ -244,7 +255,7 @@
             background-color: #e74c3c;
         }
         
-        /* 资源加载状态指示器 */
+        /* 资源加载状态指示器，有bug，暂时全局隐藏 */
         .resource-status {
             position: fixed;
             bottom: 30px;
@@ -259,7 +270,7 @@
         }
         
         .resource-status.show {
-            /*永久关闭该功能*/
+            /*永久关闭指示器该功能*/
             display: None;
         }
     </style>
